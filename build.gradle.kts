@@ -1,5 +1,4 @@
 plugins {
-	java
 	application
 	checkstyle
 	jacoco
@@ -7,6 +6,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("io.freefair.lombok") version "8.6"
 	id("io.sentry.jvm.gradle") version "5.3.0"
+	id("org.sonarqube") version "7.2.0.6526"
 }
 
 application {
@@ -75,4 +75,11 @@ sentry {
 
 tasks.sentryBundleSourcesJava {
 	enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "KryWeak_java-project-99")
+		property("sonar.organization", "kryweak")
+	}
 }
