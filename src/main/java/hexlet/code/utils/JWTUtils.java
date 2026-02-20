@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 public class JWTUtils {
 
     @Autowired
-    private JwtEncoder encoder;
+    JwtEncoder encoder;
     public String generateToken(String email) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()

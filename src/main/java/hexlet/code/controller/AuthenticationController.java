@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     @Autowired
-    private JWTUtils jwtUtils;
+    public JWTUtils jwtUtils;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    public PasswordEncoder passwordEncoder;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    public AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
     public String create(@RequestBody AuthRequest authRequest) {
