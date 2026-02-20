@@ -11,8 +11,6 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -20,10 +18,10 @@ import static org.mockito.Mockito.when;
 class UserUtilsTest {
 
     @Autowired
-    private UserUtils userUtils; // Spring создаёт и внедряет userRepository
+    private UserUtils userUtils;
 
     @MockBean
-    private UserRepository repository; // мокируем репозиторий для теста
+    private UserRepository repository;
 
     @AfterEach
     void clearContext() {
