@@ -60,6 +60,13 @@ buildscript {
 	}
 }
 
+tasks.jacocoTestReport {
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+}
+
 sonar {
 	properties {
 		property("sonar.projectKey", "KryWeak_java-project-99")
