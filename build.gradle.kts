@@ -5,7 +5,7 @@ plugins {
 	id("org.springframework.boot") version "3.3.8"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("io.freefair.lombok") version "8.6"
-	id("org.sonarqube") version "7.2.0.6526"
+	id("org.sonarqube") version "7.1.0.6387"
 }
 
 application {
