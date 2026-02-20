@@ -67,19 +67,11 @@ public class Task implements BaseEntity {
     )
     private List<Label> labels = new ArrayList<>();
 
-    /**
-     * Метод добавления метки в задачу.
-     * @param label - добавляемая метка.
-     * */
     public void addLabel(Label label) {
         this.labels.add(label);
         label.getTasks().add(this);
     }
 
-    /**
-     * Метод удаления метки из задачи.
-     * @param label - удаляемая метка.
-     * */
     public void removeLabel(Label label) {
         this.labels.remove(label);
         label.getTasks().remove(this);

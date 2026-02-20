@@ -54,19 +54,11 @@ public class TaskStatus implements BaseEntity {
     @OneToMany(targetEntity = Task.class, mappedBy = "taskStatus", fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
 
-    /**
-     * Метод для обновления списка задач с данным статусом.
-     * @param task - добавляемая задача с данным статусом
-     */
     public void addTask(Task task) {
         tasks.add(task);
         task.setTaskStatus(this);
     }
 
-    /**
-     * Метод для обновления списка задач с данным статусом.
-     * @param task - удаляемая задача с данным статусом
-     */
     public void removeTask(Task task) {
         tasks.remove(task);
         task.setTaskStatus(null);

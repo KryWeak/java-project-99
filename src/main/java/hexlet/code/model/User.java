@@ -66,82 +66,46 @@ public class User implements UserDetails, BaseEntity {
     @OneToMany(targetEntity = Task.class, mappedBy = "assignee", fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
 
-    /**
-     * Метод для обновления списка задач с данным статусом.
-     *  @param task - добавляемая задача с данным статусом
-     */
     public void addTask(Task task) {
         tasks.add(task);
         task.setAssignee(this);
     }
 
-    /**
-     * Метод для обновления списка задач с данным статусом.
-     *  @param task - удаляемая задача с данным статусом
-     */
     public void removeTask(Task task) {
         tasks.remove(task);
         task.setAssignee(null);
     }
 
-    /**
-     * Геттер для получения списка ролей пользователя.
-     * @return - возвращает список ролей пользователя (пустой)
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return new ArrayList<GrantedAuthority>();
     }
 
-    /**
-     * Геттер для получения пароля (хэшированного).
-     * @return - возвращает пароль (точнее хэш пароля)
-     */
     @Override
     public String getPassword() {
         return password;
     }
 
-    /**
-     * Геттер для получения логина.
-     * @return - возвращает логин (здесь логин это email).
-     */
     @Override
     public String getUsername() {
         return email;
     }
 
-    /**
-     * Метод для определения активности пользователя.
-     * @return - возвращает true (что означает, что пользователь активен).
-     */
     @Override
     public boolean isEnabled() {
         return true;
     }
 
-    /**
-     * Метод для определения непросроченности учетной записи пользователя.
-     * @return - возвращает true (что означает, что учетная запись пользователь не просрочена).
-     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    /**
-     * Метод для определения незаблокированности учетной записи пользователя.
-     * @return - возвращает true (что означает, что учетная запись пользователь не заблокирована).
-     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    /**
-     * Метод для определения непросроченности учетных данных пользователя.
-     * @return - возвращает true (что означает, что учетные данные пользователь не истекли).
-     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
