@@ -6,25 +6,26 @@ import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.repository.UserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(
-        uses = { JsonNullableMapper.class, ReferenceMapper.class, TaskStatusRepository.class },
-        imports = { TaskStatusRepository.class },
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = { JsonNullableMapper.class },
         componentModel = MappingConstants.ComponentModel.SPRING,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public abstract class TaskMapper {
@@ -33,161 +34,103 @@ public abstract class TaskMapper {
     protected TaskStatusRepository taskStatusRepository;
 
     @Autowired
-    private LabelRepository labelRepository;
+    protected LabelRepository labelRepository;
 
     @Autowired
-    private JsonNullableMapper jsonNullableMapper;
+    protected UserRepository userRepository;
+
+    @Autowired
+    protected JsonNullableMapper jsonNullableMapper;
 
     @Mapping(source = "title", target = "name")
     @Mapping(source = "content", target = "description")
-    @Mapping(
-            target = "taskStatus",
-            expression = "java(defineStatusFromCreateDTO(dto))"
-    )
-    @Mapping(source = "assigneeId", target = "assignee")
-    @Mapping(
-            target = "labels",
-            expression = "java(defineListLabelFromCreateDTO(dto))"
-    )
+    @Mapping(target = "taskStatus", expression = "java(defineStatusFromCreateDTO(dto))")
+    @Mapping(source = "assigneeId", target = "assignee", qualifiedByName = "mapAssignee")
+    @Mapping(target = "labels", expression = "java(defineListLabelFromCreateDTO(dto))")
     public abstract Task map(TaskCreateDTO dto);
+
+    public void update(TaskUpdateDTO dto, @MappingTarget Task model) {
+        if (dto.getTitle() != null && dto.getTitle().isPresent()) {
+            model.setName(dto.getTitle().get());
+        }
+
+        if (dto.getContent() != null && dto.getContent().isPresent()) {
+            model.setDescription(dto.getContent().get());
+        }
+
+        if (dto.getIndex() != null && dto.getIndex().isPresent()) {
+            model.setIndex(dto.getIndex().get());
+        }
+
+        if (dto.getAssigneeId() != null && dto.getAssigneeId().isPresent()) {
+            model.setAssignee(mapAssignee(dto.getAssigneeId().get()));
+        }
+
+        if (dto.getTaskLabelIds() != null && dto.getTaskLabelIds().isPresent()) {
+            List<Long> labelIds = dto.getTaskLabelIds().get();
+            model.setLabels(labelIds == null ? new ArrayList<>() : defineListLabel(labelIds));
+        }
+
+        if (dto.getStatus() != null && dto.getStatus().isPresent()) {
+            String status = dto.getStatus().get();
+            model.setTaskStatus(status == null ? null : defineStatus(status));
+        }
+    }
 
     @Mapping(source = "name", target = "title")
     @Mapping(source = "description", target = "content")
     @Mapping(source = "taskStatus.slug", target = "status")
     @Mapping(source = "assignee.id", target = "assigneeId")
-    @Mapping(
-            target = "taskLabelIds",
-            expression = "java(defineListIds(model.getLabels()))"
-    )
+    @Mapping(target = "taskLabelIds", expression = "java(defineListIds(model.getLabels()))")
     public abstract TaskDTO map(Task model);
 
-    @Mapping(source = "title", target = "name")
-    @Mapping(source = "content", target = "description")
-    @Mapping(
-            target = "taskStatus",
-            expression = "java(defineStatusFromUpdateDTO(dto, model))"
-    )
-    @Mapping(source = "assigneeId", target = "assignee")
-    @Mapping(
-            target = "labels",
-            expression = "java(defineListLabelFromUpdateDTO(dto, model))"
-    )
-    public abstract void update(TaskUpdateDTO dto, @MappingTarget Task model);
-
-    public List<Label> defineListLabel(List<Long> labelIds) {
-        if (labelIds == null) {
+    @Named("mapAssignee")
+    protected User mapAssignee(Long id) {
+        if (id == null) {
             return null;
         }
-        List<Label> result = new ArrayList<>();
-        for (Long idLabel: labelIds) {
-            if (idLabel != null) {
-                Label currentLabel = labelRepository.findById(idLabel).orElse(null);
-                if (currentLabel != null) {
-                    result.add(currentLabel);
-                }
-            }
-        }
-        return result;
+
+        return userRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("User with id " + id + " not found")
+        );
     }
 
-    public List<Label> defineListLabelFromUpdateDTO(TaskUpdateDTO data, Task model) {
-        List<Label> oldListLabel = model.getLabels();
-        boolean replace = jsonNullableMapper.isPresent(data.getTaskLabelIds());
-        if (!replace) {
-            return oldListLabel;
+    public List<Label> defineListLabel(List<Long> labelIds) {
+        if (labelIds == null || labelIds.isEmpty()) {
+            return new ArrayList<>();
         }
-        if (data == null) {
-            return null;
-        }
-        JsonNullable<List<Long>> labelIdsJson = data.getTaskLabelIds();
-        if (labelIdsJson == null) {
-            return null;
-        }
-        List<Long> labelIds = labelIdsJson.get();
-        if (labelIds == null) {
-            return null;
-        }
-        return defineListLabel(labelIds);
+
+        return labelRepository.findAllById(labelIds);
     }
 
     public List<Label> defineListLabelFromCreateDTO(TaskCreateDTO data) {
-        if (data == null) {
-            return null;
+        if (data == null || data.getTaskLabelIds() == null) {
+            return new ArrayList<>();
         }
-        List<Long> labelIds = data.getTaskLabelIds();
-        if (labelIds == null) {
-            return null;
-        }
-        return defineListLabel(labelIds);
-    }
-
-    public List<Label> defineListLabelFromListIds(List<Long> listIds) {
-        List<Label> result = new ArrayList<>();
-        for (Long idLabel: listIds) {
-            if (idLabel != null) {
-                Label currentLabel = labelRepository.findById(idLabel).orElse(null);
-                if (currentLabel != null) {
-                    result.add(currentLabel);
-                }
-            }
-        }
-        return result;
-    }
-
-    public List<Long> defineListIds(List<Label> labelList) {
-        if (labelList == null) {
-            return null;
-        }
-        List<Long> result = new ArrayList<>();
-        for (Label currentLabel: labelList) {
-            if (currentLabel != null) {
-                result.add(currentLabel.getId());
-            }
-        }
-        return result;
-    }
-
-    public TaskStatus defineStatusFromUpdateDTO(TaskUpdateDTO data, Task model) {
-        TaskStatus oldStatus = model.getTaskStatus();
-        boolean replace = jsonNullableMapper.isPresent(data.getStatus());
-        if (!replace) {
-            return oldStatus;
-        }
-        if (data == null) {
-            return null;
-        }
-        JsonNullable<String> statusJson = data.getStatus();
-        if (statusJson == null) {
-            return null;
-        }
-        String status = statusJson.get();
-        if (status == null) {
-            return null;
-        }
-        return defineStatus(status);
+        return defineListLabel(data.getTaskLabelIds());
     }
 
     public TaskStatus defineStatusFromCreateDTO(TaskCreateDTO data) {
-        if (data == null) {
+        if (data == null || data.getStatus() == null) {
             return null;
         }
-        String status = data.getStatus();
-        if (status == null) {
-            return null;
-        }
-        return defineStatus(status);
+        return defineStatus(data.getStatus());
     }
 
     public TaskStatus defineStatus(String status) {
-        if (status == null) {
-            return null;
+        return status == null || status.isEmpty() ? null : taskStatusRepository.findBySlug(status).orElse(null);
+    }
+
+    public List<Long> defineListIds(List<Label> labels) {
+        if (labels == null) {
+            return new ArrayList<>();
         }
-        if (status.isEmpty()) {
-            return null;
+        List<Long> result = new ArrayList<>();
+        for (Label label : labels) {
+            if (label != null) {
+                result.add(label.getId());
+            }
         }
-        if (taskStatusRepository.findBySlug(status).isPresent()) {
-            return taskStatusRepository.findBySlug(status).get();
-        }
-        return null;
+        return result;
     }
 }

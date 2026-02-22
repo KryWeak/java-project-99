@@ -48,25 +48,21 @@ public class CustomUserDetailService implements UserDetailsManager {
 
     @Override
     public void updateUser(UserDetails user) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
     }
 
     @Override
     public void deleteUser(String username) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'deleteUser'");
     }
 
     @Override
     public void changePassword(String oldPassword, String newPassword) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'changePassword'");
     }
 
     @Override
     public boolean userExists(String username) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'userExists'");
     }
 }

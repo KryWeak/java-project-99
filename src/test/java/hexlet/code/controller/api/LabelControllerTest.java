@@ -96,17 +96,9 @@ public class LabelControllerTest {
         var expected = labelRepository.findAll().stream()
                 .map(l -> labelMapper.map(l))
                 .toList();
-        assertThat(labelDtoToString(actual)).isEqualTo(labelDtoToString(expected));
-    }
-
-    public String labelDtoToString(List<LabelDTO> list) {
-        StringBuilder result = new StringBuilder();
-        for (LabelDTO l: list) {
-            result.append(" Label with id = ").append(l.getId())
-                    .append(" : name = ").append(l.getName())
-                    .append("\n");
-        }
-        return result.toString();
+        assertThat(actual)
+                .usingRecursiveFieldByFieldElementComparator()
+                .containsExactlyInAnyOrderElementsOf(expected);
     }
 
     @Test
@@ -157,9 +149,10 @@ public class LabelControllerTest {
                 .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody);
-        var response = mockMvc.perform(request)
+        mockMvc.perform(request)
                 .andExpect(status().isCreated());
-        var label = labelRepository.findByName(data.getName()).get();
+        var label = labelRepository.findByName(data.getName())
+                .orElseThrow(() -> new RuntimeException("Label with name " + data.getName() + " not found"));
         assertNotNull(label);
         assertThat(label.getName()).isEqualTo(data.getName());
     }
@@ -193,7 +186,8 @@ public class LabelControllerTest {
                 .content(requestBody);
         mockMvc.perform(request)
                 .andExpect(status().isOk());
-        var label = labelRepository.findById(testLabel.getId()).get();
+        var label = labelRepository.findById(testLabel.getId())
+                .orElseThrow(() -> new RuntimeException("Label with id " + testLabel.getId() + " not found"));
         assertThat(label.getName()).isEqualTo("newLabel");
     }
 

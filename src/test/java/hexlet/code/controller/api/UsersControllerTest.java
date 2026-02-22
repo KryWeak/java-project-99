@@ -96,7 +96,9 @@ public class UsersControllerTest {
                 .map(u -> userMapper.map(u))
                 //.sorted()
                 .toList();
-        assertThat(userDtoToString(actual)).isEqualTo(userDtoToString(expected));
+        assertThat(actual)
+                .usingRecursiveFieldByFieldElementComparator()
+                .containsExactlyInAnyOrderElementsOf(expected);
     }
 
     @Test
@@ -107,18 +109,6 @@ public class UsersControllerTest {
                 .getResponse();
         var body = response.getContentAsString();
         assertThat(body).isEmpty();
-    }
-
-    public String userDtoToString(List<UserDTO> list) {
-        StringBuilder result = new StringBuilder();
-        for (var u: list) {
-            result.append(" User with id = ").append(u.getId())
-                    .append(" : firstName = ").append(u.getFirstName())
-                    .append(", lastName = ").append(u.getLastName())
-                    .append(", email = ").append(u.getEmail())
-                    .append("\n");
-        }
-        return result.toString();
     }
 
     @Test

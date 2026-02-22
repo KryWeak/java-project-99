@@ -34,10 +34,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -84,10 +84,13 @@ public class TaskStatusesControllerTest {
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .build();
+
         testUser = Instancio.of(modelGenerator.getUserModel()).create();
         testTaskStatus = Instancio.of(modelGenerator.getTaskStatusModel()).create();
+
         userRepository.save(testUser);
         repository.save(testTaskStatus);
+
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
     }
 
@@ -99,23 +102,13 @@ public class TaskStatusesControllerTest {
                 .getResponse();
         var body = response.getContentAsString();
         List<TaskStatusDTO> taskStatusDTOS = objectMapper.readValue(body, new TypeReference<>() { });
-        var actual = taskStatusDTOS.stream()
-                .toList();
+        var actual = taskStatusDTOS.stream().toList();
         var expected = repository.findAll().stream()
                 .map(u -> mapper.map(u))
                 .toList();
-        assertThat(taskStatusDtoToString(actual)).isEqualTo(taskStatusDtoToString(expected));
-    }
-
-    public String taskStatusDtoToString(List<TaskStatusDTO> list) {
-        StringBuilder result = new StringBuilder();
-        for (var ts: list) {
-            result.append(" TaskStatus with id = ").append(ts.getId())
-                    .append(" : name = ").append(ts.getName())
-                    .append(", slug = ").append(ts.getSlug())
-                    .append("\n");
-        }
-        return result.toString();
+        assertThat(actual)
+                .usingRecursiveFieldByFieldElementComparator()
+                .containsExactlyInAnyOrderElementsOf(expected);
     }
 
     @Test
@@ -155,23 +148,24 @@ public class TaskStatusesControllerTest {
 
     @Test
     public void testCreateTaskStatus() throws Exception {
-        var data = Instancio.of(modelGenerator.getTaskStatusModel())
-                .create();
+        var data = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         var request = post("/api/task_statuses")
                 .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(data));
         mockMvc.perform(request)
                 .andExpect(status().isCreated());
-        var taskStatus = repository.findBySlug(data.getSlug()).get();
+
+        var taskStatus = repository.findBySlug(data.getSlug())
+                .orElseThrow(() -> new RuntimeException("TaskStatus not found"));
+
         assertNotNull(taskStatus);
         assertThat(taskStatus.getName()).isEqualTo(data.getName());
     }
 
     @Test
     public void testCreateTaskStatusWithoutAuth() throws Exception {
-        var data = Instancio.of(modelGenerator.getTaskStatusModel())
-                .create();
+        var data = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         var request = post("/api/task_statuses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(data));
@@ -193,7 +187,10 @@ public class TaskStatusesControllerTest {
                 .content(objectMapper.writeValueAsString(dto));
         mockMvc.perform(request)
                 .andExpect(status().isOk());
-        var taskStatus = repository.findBySlug(testTaskStatus.getSlug()).get();
+
+        var taskStatus = repository.findBySlug(testTaskStatus.getSlug())
+                .orElseThrow(() -> new RuntimeException("TaskStatus not found"));
+
         assertThat(taskStatus.getName()).isEqualTo("new-status");
     }
 
@@ -218,8 +215,8 @@ public class TaskStatusesControllerTest {
                 .with(token);
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
-        assertThat(repository.existsById(testTaskStatus.getId())).
-                isEqualTo(false);
+        assertThat(repository.existsById(testTaskStatus.getId()))
+                .isEqualTo(false);
     }
 
     @Test

@@ -11,6 +11,9 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
+
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -36,11 +39,28 @@ class UserUtilsTest {
         when(repository.findById(1L)).thenReturn(Optional.of(user));
 
         TestingAuthenticationToken auth =
-                new TestingAuthenticationToken("user@test.com", null);
+                new TestingAuthenticationToken("user@test.com", null, "ROLE_USER");
+        auth.setAuthenticated(true); // ключевой момент
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         boolean result = userUtils.isCurrentUser(1L);
 
         assertTrue(result);
+    }
+
+    @Test
+    void testGetCurrentUser() {
+        User user = new User();
+        user.setEmail("user@test.com");
+        when(repository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
+
+        TestingAuthenticationToken auth =
+                new TestingAuthenticationToken("user@test.com", null, "ROLE_USER");
+        auth.setAuthenticated(true);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        User current = userUtils.getCurrentUser();
+        assertNotNull(current);
+        assertEquals("user@test.com", current.getEmail());
     }
 }

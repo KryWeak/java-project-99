@@ -1,21 +1,21 @@
 package hexlet.code.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Table;
+import jakarta.persistence.EntityListeners;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -34,7 +34,7 @@ import java.util.List;
 @ToString(includeFieldNames = true, onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails, BaseEntity {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ToString.Include
@@ -48,10 +48,9 @@ public class User implements UserDetails, BaseEntity {
     private String lastName;
 
     @NotNull
-    @ToString.Include
-    @EqualsAndHashCode.Include
-    @Column(unique = true)
     @Email
+    @Column(unique = true)
+    @ToString.Include
     private String email;
 
     @Size(min = 3)
@@ -63,7 +62,7 @@ public class User implements UserDetails, BaseEntity {
     @LastModifiedDate
     private LocalDate updatedAt;
 
-    @OneToMany(targetEntity = Task.class, mappedBy = "assignee", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "assignee", fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
 
     public void addTask(Task task) {
@@ -78,7 +77,7 @@ public class User implements UserDetails, BaseEntity {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<GrantedAuthority>();
+        return new ArrayList<>();
     }
 
     @Override
