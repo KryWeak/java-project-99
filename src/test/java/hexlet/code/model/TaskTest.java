@@ -31,4 +31,17 @@ class TaskTest {
         assertEquals(0, task.getLabels().size());
         assertFalse(label.getTasks().contains(task));
     }
+
+    @Test
+    void testSetAssigneeAndStatus() {
+        Task task = new Task();
+        User user = new User();
+        TaskStatus status = new TaskStatus();
+
+        task.setAssignee(user);
+        assertEquals(user, task.getAssignee());
+
+        task.setTaskStatus(status);
+        assertEquals(status, task.getTaskStatus());
+    }
 }
