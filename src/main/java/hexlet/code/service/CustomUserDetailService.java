@@ -16,13 +16,13 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailService implements UserDetailsManager {
 
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
-    private UserMapper userMapper;
+    UserMapper userMapper;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = userRepository.findByEmail(email)

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class LabelService {
 
     @Autowired
-    private LabelRepository labelRepository;
+    LabelRepository labelRepository;
 
     public void createLabel(String name) {
 

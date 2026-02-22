@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class TaskStatusService {
 
     @Autowired
-    private TaskStatusRepository taskStatusRepository;
+    TaskStatusRepository taskStatusRepository;
 
     public void createTaskStatus(String name, String slug) {
 
