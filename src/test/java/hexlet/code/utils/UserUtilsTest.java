@@ -1,11 +1,9 @@
 package hexlet.code.utils;
 
-import hexlet.code.model.User;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UserUtilsNewTest {
 
