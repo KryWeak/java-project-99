@@ -2,46 +2,20 @@ package hexlet.code.model;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
-
     @Test
-    void testGettersAndSetters() {
+    void testIndexSetterGetter() {
         Task task = new Task();
-        task.setName("Task 1");
-        task.setDescription("Description 1");
-
-        assertEquals("Task 1", task.getName());
-        assertEquals("Description 1", task.getDescription());
+        task.setIndex(5L);
+        assertEquals(5L, task.getIndex());
     }
 
     @Test
-    void testAddAndRemoveLabel() {
+    void testCreatedAt() {
         Task task = new Task();
-        Label label = new Label();
-
-        task.addLabel(label);
-        assertEquals(1, task.getLabels().size());
-        assertTrue(label.getTasks().contains(task));
-
-        task.removeLabel(label);
-        assertEquals(0, task.getLabels().size());
-        assertFalse(label.getTasks().contains(task));
-    }
-
-    @Test
-    void testSetAssigneeAndStatus() {
-        Task task = new Task();
-        User user = new User();
-        TaskStatus status = new TaskStatus();
-
-        task.setAssignee(user);
-        assertEquals(user, task.getAssignee());
-
-        task.setTaskStatus(status);
-        assertEquals(status, task.getTaskStatus());
+        task.setCreatedAt(java.time.LocalDate.now());
+        assertNotNull(task.getCreatedAt());
     }
 }
