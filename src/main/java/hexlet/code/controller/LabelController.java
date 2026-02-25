@@ -3,23 +3,20 @@ package hexlet.code.controller;
 import hexlet.code.dto.LabelCreateDTO;
 import hexlet.code.dto.LabelDTO;
 import hexlet.code.dto.LabelUpdateDTO;
-import hexlet.code.exception.ResourceNotFoundException;
-import hexlet.code.mapper.LabelMapper;
-import hexlet.code.repository.LabelRepository;
+import hexlet.code.service.LabelService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
 
@@ -27,61 +24,42 @@ import java.util.List;
 @RequestMapping(path = "/api")
 public class LabelController {
 
-    @Autowired
-    private LabelRepository labelRepository;
+    private final LabelService labelService;
 
-    @Autowired
-    private LabelMapper labelMapper;
+    public LabelController(LabelService labelService) {
+        this.labelService = labelService;
+    }
 
-    @GetMapping(path = "/labels")
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/labels")
     public ResponseEntity<List<LabelDTO>> indexLabels() {
-        var labels = labelRepository.findAll();
-        var result = labels.stream()
-                .map(l -> labelMapper.map(l))
-                .toList();
+        var result = labelService.getAll();
+
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.size()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(result);
     }
 
-    @GetMapping(path = "/labels/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/labels/{id}")
     public LabelDTO showLabel(@PathVariable Long id) {
-        var label = labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found"));
-        var dto = labelMapper.map(label);
-        return dto;
+        return labelService.getById(id);
     }
 
-    @PostMapping(path = "/labels")
+    @PostMapping("/labels")
     @ResponseStatus(HttpStatus.CREATED)
     public LabelDTO createLabel(@RequestBody @Valid LabelCreateDTO data) {
-        var label = labelMapper.map(data);
-        labelRepository.save(label);
-        var dto = labelMapper.map(label);
-        return dto;
+        return labelService.create(data);
     }
 
-    @PutMapping(path = "/labels/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public LabelDTO updateLabel(@Valid @RequestBody LabelUpdateDTO data,
-                                                @PathVariable Long id) {
-        var label = labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found"));
-        labelMapper.update(data, label);
-        labelRepository.save(label);
-        var dto = labelMapper.map(label);
-        return dto;
+    @PutMapping("/labels/{id}")
+    public LabelDTO updateLabel(@PathVariable Long id,
+                                @Valid @RequestBody LabelUpdateDTO data) {
+        return labelService.update(id, data);
     }
 
-    @DeleteMapping(path = "/labels/{id}")
+    @DeleteMapping("/labels/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteLabel(@PathVariable Long id) {
-        var label = labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Label with id " + id + " not found"));
-        labelRepository.deleteById(id);
+        labelService.delete(id);
     }
 }

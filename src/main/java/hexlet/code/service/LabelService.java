@@ -1,20 +1,22 @@
 package hexlet.code.service;
 
-import hexlet.code.model.Label;
-import hexlet.code.repository.LabelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import hexlet.code.dto.LabelCreateDTO;
+import hexlet.code.dto.LabelDTO;
+import hexlet.code.dto.LabelUpdateDTO;
 
-@Service
-public class LabelService {
+import java.util.List;
 
-    @Autowired
-    LabelRepository labelRepository;
+public interface LabelService {
 
-    public void createLabel(String name) {
+    List<LabelDTO> getAll();
 
-        var taskStatus = new Label();
-        taskStatus.setName(name);
-        labelRepository.save(taskStatus);
-    }
+    LabelDTO getById(Long id);
+
+    LabelDTO create(LabelCreateDTO dto);
+
+    LabelDTO update(Long id, LabelUpdateDTO dto);
+
+    void delete(Long id);
+
+    void createLabel(String name);
 }

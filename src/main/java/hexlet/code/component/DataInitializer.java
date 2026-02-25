@@ -7,36 +7,38 @@ import hexlet.code.repository.UserRepository;
 import hexlet.code.service.CustomUserDetailService;
 import hexlet.code.service.LabelService;
 import hexlet.code.service.TaskStatusService;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
-    @Autowired
-    private CustomUserDetailService userService;
+    private final CustomUserDetailService userService;
+    private final TaskStatusService taskStatusService;
+    private final LabelService labelService;
+    private final UserRepository userRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final LabelRepository labelRepository;
 
-    @Autowired
-    private TaskStatusService taskStatusService;
+    public DataInitializer(
+            CustomUserDetailService userService,
+            TaskStatusService taskStatusService,
+            LabelService labelService,
+            UserRepository userRepository,
+            TaskStatusRepository taskStatusRepository,
+            LabelRepository labelRepository) {
 
-    @Autowired
-    private LabelService labelService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
+        this.userService = userService;
+        this.taskStatusService = taskStatusService;
+        this.labelService = labelService;
+        this.userRepository = userRepository;
+        this.taskStatusRepository = taskStatusRepository;
+        this.labelRepository = labelRepository;
+    }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
 
         if (userRepository.findAll().isEmpty()) {
             var userData = new User();

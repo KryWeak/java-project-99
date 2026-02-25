@@ -19,13 +19,10 @@ class AuthenticationControllerTest {
         AuthenticationManager authenticationManager = Mockito.mock(AuthenticationManager.class);
         PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
 
-        Mockito.when(jwtUtils.generateToken("user@test.com"))
-                .thenReturn("token");
+        Mockito.when(jwtUtils.generateToken("user@test.com")).thenReturn("token");
 
-        AuthenticationController controller = new AuthenticationController();
-        controller.jwtUtils = jwtUtils;
-        controller.authenticationManager = authenticationManager;
-        controller.passwordEncoder = passwordEncoder;
+        AuthenticationController controller =
+                new AuthenticationController(jwtUtils, passwordEncoder, authenticationManager);
 
         AuthRequest request = new AuthRequest();
         request.setUsername("user@test.com");
