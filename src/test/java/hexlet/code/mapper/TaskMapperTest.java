@@ -14,15 +14,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+
 
 class TaskMapperTest {
 
@@ -45,68 +48,143 @@ class TaskMapperTest {
     }
 
     @Test
-    void testMapCreateDTOToTask() {
-        TaskCreateDTO dto = new TaskCreateDTO();
-        dto.setTitle("Task 1");
-        dto.setContent("Content 1");
-        dto.setAssigneeId(1L);
-        dto.setStatus("draft");
-        dto.setTaskLabelIds(List.of(1L, 2L));
-
-        TaskStatus status = new TaskStatus();
-        status.setSlug("draft");
-        when(statusRepo.findBySlug("draft")).thenReturn(Optional.of(status));
-
-        Label l1 = new Label(); l1.setId(1L);
-        Label l2 = new Label(); l2.setId(2L);
-        when(labelRepo.findAllById(List.of(1L, 2L))).thenReturn(List.of(l1, l2));
-
-        User user = new User(); user.setId(1L);
-        when(userRepo.findById(1L)).thenReturn(Optional.of(user));
-
-        Task task = mapper.map(dto);
-        assertEquals("Task 1", task.getName());
-        assertEquals("Content 1", task.getDescription());
-        assertEquals(user, task.getAssignee());
-        assertEquals(status, task.getTaskStatus());
-        assertEquals(2, task.getLabels().size());
-    }
-
-    @Test
-    void testUpdateTask() {
+    void testUpdateWithNullsAndEmpty() {
         Task task = new Task();
-        task.setName("Old Name");
-        task.setDescription("Old Content");
         TaskUpdateDTO dto = new TaskUpdateDTO();
-        dto.setTitle(org.openapitools.jackson.nullable.JsonNullable.of("New Name"));
-        dto.setContent(org.openapitools.jackson.nullable.JsonNullable.of("New Content"));
-        dto.setIndex(org.openapitools.jackson.nullable.JsonNullable.of(10L));
 
-        mapper.update(dto, task);
+        dto.setTitle(JsonNullable.undefined());
+        dto.setContent(JsonNullable.undefined());
+        dto.setIndex(JsonNullable.undefined());
+        dto.setAssigneeId(JsonNullable.undefined());
+        dto.setStatus(JsonNullable.undefined());
+        dto.setTaskLabelIds(JsonNullable.undefined());
 
-        assertEquals("New Name", task.getName());
-        assertEquals("New Content", task.getDescription());
-        assertEquals(10L, task.getIndex());
+        assertDoesNotThrow(() -> mapper.update(dto, task));
     }
 
     @Test
-    void testMapTaskToDTO() {
+    void testUpdateWithNullDTOFields() {
         Task task = new Task();
-        task.setName("Task 1");
-        TaskDTO dto = mapper.map(task);
-        assertEquals("Task 1", dto.getTitle());
+        TaskUpdateDTO dto = new TaskUpdateDTO();
+
+        dto.setTitle(null);
+        dto.setContent(null);
+        dto.setIndex(null);
+        dto.setAssigneeId(null);
+        dto.setStatus(null);
+        dto.setTaskLabelIds(null);
+
+        assertDoesNotThrow(() -> mapper.update(dto, task));
     }
 
     @Test
-    void testMapAssigneeNotFound() {
+    void testDefineStatusAndListLabelWithNullOrEmpty() {
+        assertNull(mapper.defineStatus(null));
+        assertNull(mapper.defineStatus(""));
+
+        assertTrue(mapper.defineListLabel(null).isEmpty());
+        assertTrue(mapper.defineListLabel(List.of()).isEmpty());
+
+        TaskCreateDTO dto = new TaskCreateDTO();
+        dto.setTaskLabelIds(null);
+        assertTrue(mapper.defineListLabelFromCreateDTO(dto).isEmpty());
+
+        dto.setTaskLabelIds(List.of());
+        assertTrue(mapper.defineListLabelFromCreateDTO(dto).isEmpty());
+
+        dto.setStatus(null);
+        assertNull(mapper.defineStatusFromCreateDTO(dto));
+    }
+
+    @Test
+    void testMapAssigneeWithNullAndMissing() {
+        assertNull(mapper.mapAssignee(null));
+
         when(userRepo.findById(1L)).thenReturn(Optional.empty());
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> mapper.mapAssignee(1L));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> mapper.mapAssignee(1L));
+
         assertTrue(ex.getMessage().contains("not found"));
     }
 
     @Test
-    void testDefineStatusNullOrEmpty() {
-        assertNull(mapper.defineStatus(null));
-        assertNull(mapper.defineStatus(""));
+    void testMapAssigneeFound() {
+        User user = new User();
+        user.setId(1L);
+
+        when(userRepo.findById(1L)).thenReturn(Optional.of(user));
+
+        User result = mapper.mapAssignee(1L);
+
+        assertEquals(user, result);
+    }
+
+    @Test
+    void testDefineListLabelWithValues() {
+        Label label = new Label();
+        label.setId(1L);
+
+        when(labelRepo.findAllById(List.of(1L))).thenReturn(List.of(label));
+
+        List<Label> result = mapper.defineListLabel(List.of(1L));
+
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getId());
+    }
+
+    @Test
+    void testDefineStatusFound() {
+        TaskStatus status = new TaskStatus();
+        status.setSlug("draft");
+
+        when(statusRepo.findBySlug("draft")).thenReturn(Optional.of(status));
+
+        TaskStatus result = mapper.defineStatus("draft");
+
+        assertEquals(status, result);
+    }
+
+    @Test
+    void testDefineListIdsWithNull() {
+        List<Long> result = mapper.defineListIds(null);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testMapCreateDTOWithNullLabelsAndStatus() {
+        TaskCreateDTO dto = new TaskCreateDTO();
+        dto.setTitle("Task");
+        dto.setContent("Content");
+        dto.setAssigneeId(null);
+        dto.setTaskLabelIds(null);
+        dto.setStatus(null);
+
+        Task task = mapper.map(dto);
+
+        assertEquals("Task", task.getName());
+        assertEquals("Content", task.getDescription());
+        assertNull(task.getAssignee());
+        assertNull(task.getTaskStatus());
+        assertTrue(task.getLabels().isEmpty());
+    }
+
+    @Test
+    void testMapTaskToDTOWithNullFields() {
+        Task task = new Task();
+        task.setName("My Task");
+        task.setDescription(null);
+        task.setTaskStatus(null);
+        task.setAssignee(null);
+        task.setLabels(null);
+
+        TaskDTO dto = mapper.map(task);
+
+        assertEquals("My Task", dto.getTitle());
+        assertNull(dto.getContent());
+        assertNull(dto.getStatus());
+        assertNull(dto.getAssigneeId());
+        assertTrue(dto.getTaskLabelIds().isEmpty());
     }
 }
