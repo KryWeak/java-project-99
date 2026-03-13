@@ -12,14 +12,11 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.TaskStatusService;
 import hexlet.code.specification.TaskSpecification;
-//import io.sentry.Sentry;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,20 +34,25 @@ import java.util.List;
 @RequestMapping("/api")
 public class TaskController {
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskStatusService taskStatusService;
+    private final TaskSpecification taskSpecification;
 
-    @Autowired
-    private TaskMapper taskMapper;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskStatusService taskStatusService;
-
-    @Autowired
-    private TaskSpecification taskSpecification;
+    public TaskController(
+            TaskRepository taskRepository,
+            TaskMapper taskMapper,
+            TaskStatusRepository taskStatusRepository,
+            TaskStatusService taskStatusService,
+            TaskSpecification taskSpecification
+    ) {
+        this.taskRepository = taskRepository;
+        this.taskMapper = taskMapper;
+        this.taskStatusRepository = taskStatusRepository;
+        this.taskStatusService = taskStatusService;
+        this.taskSpecification = taskSpecification;
+    }
 
     @GetMapping(path = "/tasks")
     @ResponseStatus(HttpStatus.OK)

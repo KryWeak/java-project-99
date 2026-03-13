@@ -12,11 +12,13 @@ class TaskStatusServiceTest {
 
     @Test
     void testCreateTaskStatus() {
+
         TaskStatusRepository repo = mock(TaskStatusRepository.class);
-        TaskStatusService service = new TaskStatusService();
-        service.taskStatusRepository = repo;
+
+        TaskStatusService service = new TaskStatusServiceImpl(repo);
 
         service.createTaskStatus("Open", "open");
+
         verify(repo).save(any(TaskStatus.class));
     }
 }

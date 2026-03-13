@@ -7,7 +7,6 @@ import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.repository.TaskStatusRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +26,14 @@ import java.util.List;
 @RequestMapping("/api")
 public class TaskStatusController {
 
-    @Autowired
-    private TaskStatusRepository repository;
+    private final TaskStatusRepository repository;
+    private final TaskStatusMapper mapper;
 
-    @Autowired
-    private TaskStatusMapper mapper;
+    public TaskStatusController(TaskStatusRepository repository,
+                                TaskStatusMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
     @GetMapping(path = "/task_statuses")
     @ResponseStatus(HttpStatus.OK)
