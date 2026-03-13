@@ -2,8 +2,8 @@ package hexlet.code.handler;
 
 import hexlet.code.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -16,6 +16,15 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
     public Map<String, String> handleNotFound(ResourceNotFoundException e) {
+        return Map.of(
+                "error", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public Map<String, String> handleAll(Exception e) {
         return Map.of(
                 "error", e.getMessage()
         );
