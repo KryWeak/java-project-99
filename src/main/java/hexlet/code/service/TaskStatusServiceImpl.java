@@ -15,7 +15,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     public void createTaskStatus(String name, String slug) {
-        var taskStatus = new TaskStatus();
+        TaskStatus taskStatus = new TaskStatus();
         taskStatus.setName(name);
         taskStatus.setSlug(slug);
         taskStatusRepository.save(taskStatus);

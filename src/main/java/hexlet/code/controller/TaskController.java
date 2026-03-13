@@ -9,8 +9,6 @@ import hexlet.code.mapper.TaskMapper;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
-import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.service.TaskStatusService;
 import hexlet.code.specification.TaskSpecification;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -36,21 +34,15 @@ public class TaskController {
 
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
-    private final TaskStatusRepository taskStatusRepository;
-    private final TaskStatusService taskStatusService;
     private final TaskSpecification taskSpecification;
 
     public TaskController(
             TaskRepository taskRepository,
             TaskMapper taskMapper,
-            TaskStatusRepository taskStatusRepository,
-            TaskStatusService taskStatusService,
             TaskSpecification taskSpecification
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
-        this.taskStatusRepository = taskStatusRepository;
-        this.taskStatusService = taskStatusService;
         this.taskSpecification = taskSpecification;
     }
 

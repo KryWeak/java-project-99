@@ -79,12 +79,15 @@ public class TaskStatusController {
         return dto;
     }
 
-    @DeleteMapping(path = "/task_statuses/{id}")
+    @DeleteMapping("/task_statuses/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTaskStatus(@PathVariable Long id) throws Exception {
-        var taskStatus = repository.findById(id)
+    public void deleteTaskStatus(@PathVariable Long id) {
+
+        repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "TaskStatus with id " + id + " not found"));
+                        "TaskStatus with id " + id + " not found"
+                ));
+
         repository.deleteById(id);
     }
 }
